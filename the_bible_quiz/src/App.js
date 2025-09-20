@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 // Consolidated list of Bible quiz questions with difficulty levels
 const allQuestions = [
@@ -39,7 +39,7 @@ const allQuestions = [
   // Stage 3 (Medium to Hard)
   { id: 31, question: "Who was the first person to see the resurrected Jesus?", options: ["Mary Magdalene", "Peter", "John", "Thomas"], correctAnswer: "Mary Magdalene", difficulty: "medium" },
   { id: 32, question: "Which book of the Bible contains the story of Joseph and his coat of many colors?", options: ["Genesis", "Exodus", "Numbers", "Leviticus"], correctAnswer: "Genesis", difficulty: "medium" },
-  { id: 33, question: "What was the name of the garden where Jesus prayed before his crucifixion?", options: ["The Garden of Eden", "The Garden of Gethsemane", "The Garden of Siloam", "The Garden of Bethesda"], correctAnswer: "The Garden of Gethsemane", difficulty: "hard" },
+  { id: 33, question: "What was the name of the garden where Jesus prayed before his crucifixion?", options: ["The Garden of Eden", "The Garden of Gethsemane", "The Garden of Gethsemane", "The Garden of Bethesda"], correctAnswer: "The Garden of Gethsemane", difficulty: "hard" },
   { id: 34, question: "Who wrote the book of Revelation?", options: ["Paul", "Peter", "John", "James"], correctAnswer: "John", difficulty: "hard" },
   { id: 35, question: "In the Old Testament, which city's walls fell after the Israelites marched around it?", options: ["Babylon", "Jericho", "Jerusalem", "Gaza"], correctAnswer: "Jericho", difficulty: "hard" },
   { id: 36, question: "Who was the Roman governor who presided over the trial of Jesus?", options: ["Herod Antipas", "Pontius Pilate", "Caesar Augustus", "Tiberius"], correctAnswer: "Pontius Pilate", difficulty: "hard" },
@@ -257,15 +257,15 @@ const shuffleArray = (array) => {
 };
 
 // StartScreen component to begin the quiz
-const StartScreen = ({ onStartQuiz }) => (
-  <div className="flex flex-col items-center justify-center p-8 bg-white rounded-3xl shadow-2xl w-full max-w-lg mx-auto transform transition-transform duration-500 ease-in-out hover:scale-[1.02]">
-    <h1 className="text-5xl font-extrabold text-indigo-700 mb-4 text-center">Bible Quiz</h1>
-    <p className="text-xl text-gray-700 mt-2 mb-6 text-center">Test your knowledge of the Bible!</p>
-    <button
-      onClick={onStartQuiz}
-      className="w-full py-4 px-6 rounded-xl text-white font-bold text-lg transition-all duration-300 ease-in-out transform hover:scale-105 bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-xl"
-    >
+const StartScreen = ({ onStartQuiz, onStartVerseGame }) => (
+  <div className="card">
+    <h1 className="title">Bible Quiz</h1>
+    <p className="subtitle">Test your knowledge of the Bible!</p>
+    <button onClick={onStartQuiz} className="button primary-button">
       Start Quiz
+    </button>
+    <button onClick={onStartVerseGame} className="button secondary-button mt-4">
+      Start Verse Challenge
     </button>
   </div>
 );
@@ -274,61 +274,52 @@ const StartScreen = ({ onStartQuiz }) => (
 const QuizPage = ({ questions, currentQuestionIndex, onAnswer, onRestartQuiz, currentStage }) => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
 
-  // Guard against initial render without questions
   if (questions.length === 0) {
     return null;
   }
   const currentQuestion = questions[currentQuestionIndex];
 
-  // Handles user answer selection with visual feedback
   const handleAnswerClick = (answer) => {
     setSelectedAnswer(answer);
     setTimeout(() => {
       onAnswer(answer);
       setSelectedAnswer(null);
-    }, 1500); // 1.5 second delay
+    }, 1500);
   };
 
-  // Determines button color based on answer state
-  const getButtonColor = (answer) => {
+  const getButtonClass = (option) => {
     if (selectedAnswer === null) {
-      return 'bg-gray-100 hover:bg-indigo-100 border-gray-300 hover:border-indigo-400';
+      return "option-button";
     }
-
-    if (answer === currentQuestion.correctAnswer) {
-      return 'bg-green-500 border-green-700 text-white';
+    if (option === currentQuestion.correctAnswer) {
+      return "option-button correct-answer";
     }
-
-    if (answer === selectedAnswer && answer !== currentQuestion.correctAnswer) {
-      return 'bg-red-500 border-red-700 text-white';
+    if (option === selectedAnswer) {
+      return "option-button incorrect-answer";
     }
-
-    return 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed';
+    return "option-button disabled";
   };
 
   return (
-    <div className="flex flex-col items-center p-8 bg-white rounded-3xl shadow-2xl w-full max-w-lg mx-auto">
-      <h3 className="text-xl font-bold text-indigo-600 mb-2">Stage {currentStage}</h3>
-      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">{currentQuestion.question}</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+    <div className="card">
+      <h3 className="stage-title">Stage {currentStage}</h3>
+      <h2 className="question-text">{currentQuestion.question}</h2>
+      <div className="options-grid">
         {currentQuestion.options.map((option, index) => (
           <button
             key={index}
             onClick={() => handleAnswerClick(option)}
             disabled={selectedAnswer !== null}
-            className={`py-4 px-6 rounded-xl border-2 font-medium transition-all duration-200 ease-in-out transform hover:scale-105 ${getButtonColor(option)}`}
+            className={getButtonClass(option)}
           >
             {option}
           </button>
         ))}
       </div>
-      <div className="mt-8 text-center text-lg text-gray-600">
+      <div className="question-counter">
         Question {currentQuestionIndex + 1} of {questions.length}
       </div>
-      <button
-        onClick={onRestartQuiz}
-        className="mt-6 py-2 px-4 rounded-xl text-indigo-600 font-medium transition-all duration-300 ease-in-out hover:text-indigo-800 hover:bg-indigo-100"
-      >
+      <button onClick={onRestartQuiz} className="link-button mt-6">
         Restart Test
       </button>
     </div>
@@ -352,51 +343,47 @@ const VerseQuizPage = ({ questions, currentQuestionIndex, onAnswer, onRestartQui
     }, 1500);
   };
 
-  const getButtonColor = (answer) => {
+  const getButtonClass = (option) => {
     if (selectedAnswer === null) {
-      return 'bg-gray-100 hover:bg-indigo-100 border-gray-300 hover:border-indigo-400';
+      return "option-button";
     }
-    if (answer === currentQuestion.correctAnswer) {
-      return 'bg-green-500 border-green-700 text-white';
+    if (option === currentQuestion.correctAnswer) {
+      return "option-button correct-answer";
     }
-    if (answer === selectedAnswer && answer !== currentQuestion.correctAnswer) {
-      return 'bg-red-500 border-red-700 text-white';
+    if (option === selectedAnswer) {
+      return "option-button incorrect-answer";
     }
-    return 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed';
+    return "option-button disabled";
   };
 
   return (
-    <div className="flex flex-col items-center p-8 bg-white rounded-3xl shadow-2xl w-full max-w-lg mx-auto">
-      <h3 className="text-xl font-bold text-indigo-600 mb-2">Verse Challenge - Stage {currentStage}</h3>
-      <p className="text-xl font-medium text-gray-700 mb-6 text-center">Which verse is this?</p>
-      <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-200 w-full mb-6">
-        <p className="text-lg italic text-gray-800 text-center">"{currentQuestion.verse}"</p>
+    <div className="card">
+      <h3 className="stage-title">Verse Challenge - Stage {currentStage}</h3>
+      <p className="verse-subtitle">Which verse is this?</p>
+      <div className="verse-container">
+        <p className="verse-text">"{currentQuestion.verse}"</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+      <div className="options-grid">
         {currentQuestion.options.map((option, index) => (
           <button
             key={index}
             onClick={() => handleAnswerClick(option)}
             disabled={selectedAnswer !== null}
-            className={`py-4 px-6 rounded-xl border-2 font-medium transition-all duration-200 ease-in-out transform hover:scale-105 ${getButtonColor(option)}`}
+            className={getButtonClass(option)}
           >
             {option}
           </button>
         ))}
       </div>
-      <div className="mt-8 text-center text-lg text-gray-600">
+      <div className="question-counter">
         Question {currentQuestionIndex + 1} of {questions.length}
       </div>
-      <button
-        onClick={onRestartQuiz}
-        className="mt-6 py-2 px-4 rounded-xl text-indigo-600 font-medium transition-all duration-300 ease-in-out hover:text-indigo-800 hover:bg-indigo-100"
-      >
+      <button onClick={onRestartQuiz} className="link-button mt-6">
         Restart Challenge
       </button>
     </div>
   );
 };
-
 
 // StageResultScreen component to display the result of the stage
 const StageResultScreen = ({ gameType, score, totalQuestions, currentStage, onNextStage, onRetryStage, onFinalScore, onPreviousStage, incorrectAnswers, onBackToHome }) => {
@@ -408,85 +395,64 @@ const StageResultScreen = ({ gameType, score, totalQuestions, currentStage, onNe
   const retryText = gameType === 'quiz' ? `Retry Stage ${currentStage}` : `Retry Verse Stage ${currentStage}`;
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 bg-white rounded-3xl shadow-2xl w-full max-w-lg mx-auto text-center">
+    <div className="card text-center">
       {hasPassed ? (
         <>
-          <h2 className="text-4xl font-extrabold text-green-600 mb-4">{gameType === 'quiz' ? `Stage ${currentStage} Complete! 🎉` : `Verse Stage ${currentStage} Complete! 🎉`}</h2>
-          <p className="text-2xl text-gray-700 mb-6">
-            You scored <span className="text-green-600 font-bold">{score}</span> out of {totalQuestions}!
+          <h2 className="result-title-pass">{gameType === 'quiz' ? `Stage ${currentStage} Complete! 🎉` : `Verse Stage ${currentStage} Complete! 🎉`}</h2>
+          <p className="result-score">
+            You scored <span className="score-pass">{score}</span> out of {totalQuestions}!
           </p>
           {!isFinalQuizStage && !isFinalVerseStage ? (
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full">
-              <button
-                onClick={onNextStage}
-                className="flex-1 py-4 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg transition-all duration-300 ease-in-out transform hover:scale-105"
-              >
+            <div className="button-group">
+              <button onClick={onNextStage} className="button primary-button">
                 {nextStageText}
               </button>
               {canGoBack && (
-                <button
-                  onClick={onPreviousStage}
-                  className="flex-1 py-4 px-6 rounded-xl bg-gray-400 hover:bg-indigo-500 text-white font-bold text-lg transition-all duration-300 ease-in-out transform hover:scale-105"
-                >
+                <button onClick={onPreviousStage} className="button back-button">
                   Previous Stage
                 </button>
               )}
             </div>
           ) : (
-            <button
-              onClick={onFinalScore}
-              className="py-4 px-6 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-lg transition-all duration-300 ease-in-out transform hover:scale-105"
-            >
+            <button onClick={onFinalScore} className="button final-score-button">
               See Final Score
             </button>
           )}
-          <button
-            onClick={onBackToHome}
-            className="mt-4 py-2 px-4 rounded-xl text-indigo-600 font-medium transition-all duration-300 ease-in-out hover:text-indigo-800 hover:bg-indigo-100"
-          >
+          <button onClick={onBackToHome} className="link-button mt-4">
             Back to Home
           </button>
         </>
       ) : (
         <>
-          <h2 className="text-4xl font-extrabold text-red-600 mb-4">Let's try again, you got this! 💪</h2>
-          <p className="text-2xl text-gray-700 mb-6">
-            You scored <span className="text-red-600 font-bold">{score}</span> out of {totalQuestions}.
+          <h2 className="result-title-fail">Let's try again, you got this! 💪</h2>
+          <p className="result-score">
+            You scored <span className="score-fail">{score}</span> out of {totalQuestions}.
           </p>
-          <p className="text-lg text-gray-600 mb-4">You need at least 50% to pass this stage.</p>
-          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full">
-            <button
-              onClick={onRetryStage}
-              className="flex-1 py-4 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg transition-all duration-300 ease-in-out transform hover:scale-105"
-            >
+          <p className="text-sm">You need at least 50% to pass this stage.</p>
+          <div className="button-group">
+            <button onClick={onRetryStage} className="button primary-button">
               {retryText}
             </button>
             {canGoBack && (
-              <button
-                onClick={onPreviousStage}
-                className="flex-1 py-4 px-6 rounded-xl bg-gray-400 hover:bg-indigo-500 text-white font-bold text-lg transition-all duration-300 ease-in-out transform hover:scale-105"
-              >
+              <button onClick={onPreviousStage} className="button back-button">
                 Previous Stage
               </button>
             )}
           </div>
-          <button
-            onClick={onBackToHome}
-            className="mt-4 py-2 px-4 rounded-xl text-indigo-600 font-medium transition-all duration-300 ease-in-out hover:text-indigo-800 hover:bg-indigo-100"
-          >
+          <button onClick={onBackToHome} className="link-button mt-4">
             Back to Home
           </button>
         </>
       )}
 
       {incorrectAnswers.length > 0 && (
-        <div className="mt-8 pt-8 border-t-2 border-gray-200 w-full text-left">
-          <h3 className="text-2xl font-bold text-red-600 mb-4">Questions You Got Wrong:</h3>
+        <div className="incorrect-answers-list">
+          <h3 className="list-title">Questions You Got Wrong:</h3>
           {incorrectAnswers.map((item, index) => (
-            <div key={index} className="mb-6 p-4 bg-red-50 rounded-xl border border-red-200">
-              <p className="font-semibold text-gray-800 mb-2">Q: {item.question || `Verse: "${item.verse}"`}</p>
-              <p className="text-red-600 mb-1">Your Answer: <span className="font-semibold">{item.userAnswer}</span></p>
-              <p className="text-green-600">Correct Answer: <span className="font-semibold">{item.correctAnswer}</span></p>
+            <div key={index} className="incorrect-answer-item">
+              <p className="incorrect-question">Q: {item.question || `Verse: "${item.verse}"`}</p>
+              <p className="incorrect-user-answer">Your Answer: <span>{item.userAnswer}</span></p>
+              <p className="incorrect-correct-answer">Correct Answer: <span>{item.correctAnswer}</span></p>
             </div>
           ))}
         </div>
@@ -497,56 +463,43 @@ const StageResultScreen = ({ gameType, score, totalQuestions, currentStage, onNe
 
 // FinalScoreScreen component to display the final score
 const FinalScoreScreen = ({ gameType, totalScore, onPlayAgain, onStartVerseGame, onBackToHome }) => (
-  <div className="flex flex-col items-center justify-center p-8 bg-white rounded-3xl shadow-2xl w-full max-w-lg mx-auto text-center">
+  <div className="card text-center">
     {gameType === 'quiz' ? (
       <>
-        <h2 className="text-5xl font-extrabold text-green-600 mb-4">Quiz Complete! 🎉</h2>
-        <p className="text-2xl text-gray-700 mb-6">
-          Your final score is <span className="text-green-600 font-bold">{totalScore}</span> out of {allQuestions.length}!
+        <h2 className="final-score-title">Quiz Complete! 🎉</h2>
+        <p className="final-score-text">
+          Your final score is <span className="final-score-value">{totalScore}</span> out of {allQuestions.length}!
         </p>
-        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full">
-          <button
-            onClick={onPlayAgain}
-            className="flex-1 py-4 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg transition-all duration-300 ease-in-out transform hover:scale-105"
-          >
+        <div className="button-group">
+          <button onClick={onPlayAgain} className="button primary-button">
             Play Again
           </button>
-          <button
-            onClick={onStartVerseGame}
-            className="flex-1 py-4 px-6 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg transition-all duration-300 ease-in-out transform hover:scale-105"
-          >
+          <button onClick={onStartVerseGame} className="button secondary-button">
             Try Verse Challenge
           </button>
         </div>
       </>
     ) : (
       <>
-        <h2 className="text-5xl font-extrabold text-green-600 mb-4">Verse Challenge Complete! 🎉</h2>
-        <p className="text-2xl text-gray-700 mb-6">
-          Your final score is <span className="text-green-600 font-bold">{totalScore}</span> out of {verseQuestions.length}!
+        <h2 className="final-score-title">Verse Challenge Complete! 🎉</h2>
+        <p className="final-score-text">
+          Your final score is <span className="final-score-value">{totalScore}</span> out of {verseQuestions.length}!
         </p>
-        <button
-          onClick={onPlayAgain}
-          className="py-4 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg transition-all duration-300 ease-in-out transform hover:scale-105"
-        >
+        <button onClick={onPlayAgain} className="button primary-button">
           Play Again
         </button>
       </>
     )}
-    <button
-      onClick={onBackToHome}
-      className="mt-4 py-2 px-4 rounded-xl text-indigo-600 font-medium transition-all duration-300 ease-in-out hover:text-indigo-800 hover:bg-indigo-100"
-    >
+    <button onClick={onBackToHome} className="link-button mt-4">
       Back to Home
     </button>
   </div>
 );
 
-
 // Main App component
 const App = () => {
-  const [quizState, setQuizState] = useState('start'); // 'start', 'quiz', 'stage-result', 'final-score'
-  const [gameType, setGameType] = useState('quiz'); // 'quiz' or 'verse-game'
+  const [quizState, setQuizState] = useState('start');
+  const [gameType, setGameType] = useState('quiz');
   const [currentStage, setCurrentStage] = useState(1);
   const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -554,18 +507,17 @@ const App = () => {
   const [totalScore, setTotalScore] = useState(0);
   const [incorrectAnswers, setIncorrectAnswers] = useState([]);
 
-  // Function to get questions for the current stage based on game type
   const getStageQuestions = (type, stage) => {
     if (type === 'quiz') {
       const difficultyMap = { 1: "easy", 2: "medium", 3: "medium", 4: "hard", 5: "hard" };
       const difficulty = difficultyMap[stage] || "easy";
       const stageQuestions = allQuestions.filter(q => q.difficulty === difficulty);
-      return shuffleArray(stageQuestions).slice(0, 5); // 5 questions per stage
-    } else { // 'verse-game'
+      return shuffleArray(stageQuestions).slice(0, 5);
+    } else {
       const difficultyMap = { 1: "easy", 2: "medium", 3: "hard" };
       const difficulty = difficultyMap[stage] || "easy";
       const stageQuestions = verseQuestions.filter(q => q.difficulty === difficulty);
-      return shuffleArray(stageQuestions).slice(0, 5); // 5 questions per stage
+      return shuffleArray(stageQuestions).slice(0, 5);
     }
   };
 
@@ -591,7 +543,6 @@ const App = () => {
     setIncorrectAnswers([]);
   };
 
-  // Handles the user's answer selection
   const handleAnswer = (answer) => {
     const currentQuestion = questions[currentQuestionIndex];
     const isCorrect = answer === currentQuestion.correctAnswer;
@@ -601,7 +552,6 @@ const App = () => {
       setIncorrectAnswers(prevAnswers => [...prevAnswers, { ...currentQuestion, userAnswer: answer }]);
     }
 
-    // Move to the next question or check stage result
     if (currentQuestionIndex + 1 < questions.length) {
       setCurrentQuestionIndex(prevIndex => prevIndex + 1);
     } else {
@@ -609,7 +559,6 @@ const App = () => {
     }
   };
 
-  // Logic to handle advancing to the next stage
   const handleNextStage = () => {
     setTotalScore(prevTotal => prevTotal + stageScore);
     const nextStage = currentStage + 1;
@@ -621,7 +570,6 @@ const App = () => {
     setQuizState('quiz');
   };
 
-  // Logic to handle retrying the current stage
   const handleRetryStage = () => {
     setCurrentQuestionIndex(0);
     setStageScore(0);
@@ -630,7 +578,6 @@ const App = () => {
     setQuizState('quiz');
   };
 
-  // Logic to handle going back to the previous stage
   const handlePreviousStage = () => {
     if (currentStage > 1) {
       setTotalScore(prevTotal => prevTotal - stageScore);
@@ -644,7 +591,6 @@ const App = () => {
     }
   };
 
-  // Resets the entire game to the start state
   const handleBackToHome = () => {
     setQuizState('start');
     setGameType('quiz');
@@ -655,60 +601,371 @@ const App = () => {
     setIncorrectAnswers([]);
   };
 
-  // Main component rendering based on quiz state
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-100 to-purple-200 p-4 font-sans">
-      <script src="https://cdn.tailwindcss.com"></script>
-      <div className="w-full max-w-3xl">
-        {quizState === 'start' && <StartScreen onStartQuiz={handleStartQuiz} />}
-        {quizState === 'quiz' && gameType === 'quiz' && questions.length > 0 && (
-          <QuizPage
-            questions={questions}
-            currentQuestionIndex={currentQuestionIndex}
-            onAnswer={handleAnswer}
-            onRestartQuiz={handleStartQuiz}
-            currentStage={currentStage}
-          />
-        )}
-        {quizState === 'quiz' && gameType === 'verse-game' && questions.length > 0 && (
-          <VerseQuizPage
-            questions={questions}
-            currentQuestionIndex={currentQuestionIndex}
-            onAnswer={handleAnswer}
-            onRestartQuiz={handleStartVerseGame}
-            currentStage={currentStage}
-          />
-        )}
-        {quizState === 'stage-result' && (
-          <StageResultScreen
-            gameType={gameType}
-            score={stageScore}
-            totalQuestions={questions.length}
-            currentStage={currentStage}
-            onNextStage={handleNextStage}
-            onRetryStage={handleRetryStage}
-            onFinalScore={() => {
-              setTotalScore(prevTotal => prevTotal + stageScore);
-              setQuizState('final-score');
-            }}
-            onPreviousStage={handlePreviousStage}
-            incorrectAnswers={incorrectAnswers}
-            onBackToHome={handleBackToHome}
-          />
-        )}
-        {quizState === 'final-score' && (
-          <FinalScoreScreen
-            gameType={gameType}
-            totalScore={totalScore}
-            onPlayAgain={handleStartQuiz}
-            onStartVerseGame={handleStartVerseGame}
-            onBackToHome={handleBackToHome}
-          />
-        )}
-      </div>
+    <div className="app-container">
+      <style>
+        {`
+          .app-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: linear-gradient(to bottom right, #e0e7ff, #ede9fe);
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+          }
+
+          .card {
+            width: 100%;
+            max-width: 36rem;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            transition: transform 0.5s ease-in-out;
+          }
+
+          .card:hover {
+            transform: scale(1.02);
+          }
+
+          .title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #4338ca;
+            margin-bottom: 1rem;
+            text-align: center;
+          }
+
+          .subtitle {
+            font-size: 1.25rem;
+            color: #4b5563;
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+          }
+
+          .button {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+            transition: all 0.3s ease-in-out;
+            transform: scale(1.0);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            border: none;
+          }
+
+          .button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+          }
+
+          .button.primary-button {
+            background-color: #4f46e5;
+            color: #fff;
+          }
+
+          .button.primary-button:hover {
+            background-color: #4338ca;
+          }
+
+          .button.secondary-button {
+            background-color: #8b5cf6;
+            color: #fff;
+            margin-top: 1rem;
+          }
+
+          .button.secondary-button:hover {
+            background-color: #7c3aed;
+          }
+
+          .button.back-button {
+            background-color: #9ca3af;
+            color: #fff;
+          }
+
+          .button.back-button:hover {
+            background-color: #6b7280;
+          }
+
+          .stage-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 0.5rem;
+          }
+
+          .question-text {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            text-align: center;
+          }
+
+          .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            width: 100%;
+          }
+
+          @media (min-width: 768px) {
+            .options-grid {
+              grid-template-columns: repeat(2, 1fr);
+            }
+          }
+
+          .option-button {
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            border: 2px solid #d1d5db;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            background-color: #f9fafb;
+            color: #374151;
+          }
+
+          .option-button:hover {
+            background-color: #e0e7ff;
+            border-color: #6366f1;
+            transform: scale(1.05);
+          }
+
+          .option-button.correct-answer {
+            background-color: #22c55e;
+            border-color: #15803d;
+            color: #fff;
+          }
+
+          .option-button.incorrect-answer {
+            background-color: #ef4444;
+            border-color: #b91c1c;
+            color: #fff;
+          }
+
+          .option-button.disabled {
+            background-color: #f3f4f6;
+            border-color: #e5e7eb;
+            color: #9ca3af;
+            cursor: not-allowed;
+          }
+
+          .question-counter {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 1.125rem;
+            color: #4b5563;
+          }
+
+          .link-button {
+            margin-top: 1.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            color: #4f46e5;
+            font-weight: 500;
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+          }
+
+          .link-button:hover {
+            color: #312e81;
+            background-color: #e0e7ff;
+          }
+
+          .verse-subtitle {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+            text-align: center;
+          }
+
+          .verse-container {
+            background-color: #eef2ff;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid #c7d2fe;
+            width: 100%;
+            margin-bottom: 1.5rem;
+          }
+
+          .verse-text {
+            font-size: 1.125rem;
+            font-style: italic;
+            color: #1f2937;
+            text-align: center;
+          }
+
+          .result-title-pass {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #16a34a;
+            margin-bottom: 1rem;
+          }
+          
+          .result-title-fail {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #dc2626;
+            margin-bottom: 1rem;
+          }
+
+          .result-score {
+            font-size: 1.5rem;
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+          }
+
+          .score-pass {
+            color: #16a34a;
+            font-weight: bold;
+          }
+
+          .score-fail {
+            color: #dc2626;
+            font-weight: bold;
+          }
+
+          .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+          }
+
+          @media (min-width: 640px) {
+            .button-group {
+              flex-direction: row;
+              gap: 1rem;
+            }
+          }
+
+          .button.final-score-button {
+            background-color: #16a34a;
+          }
+          
+          .button.final-score-button:hover {
+            background-color: #15803d;
+          }
+
+          .incorrect-answers-list {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e5e7eb;
+            width: 100%;
+            text-align: left;
+          }
+
+          .list-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #dc2626;
+            margin-bottom: 1rem;
+          }
+
+          .incorrect-answer-item {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: #fef2f2;
+            border-radius: 0.75rem;
+            border: 1px solid #fee2e2;
+          }
+
+          .incorrect-question {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+          }
+
+          .incorrect-user-answer, .incorrect-correct-answer {
+            color: #dc2626;
+            margin-bottom: 0.25rem;
+          }
+
+          .incorrect-correct-answer {
+            color: #16a34a;
+          }
+
+          .incorrect-user-answer span, .incorrect-correct-answer span {
+            font-weight: 600;
+          }
+          
+          .final-score-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #16a34a;
+            margin-bottom: 1rem;
+          }
+          
+          .final-score-text {
+            font-size: 1.5rem;
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+          }
+          
+          .final-score-value {
+            color: #16a34a;
+            font-weight: bold;
+          }
+        `}
+      </style>
+      
+      {quizState === 'start' && <StartScreen onStartQuiz={handleStartQuiz} onStartVerseGame={handleStartVerseGame} />}
+      {quizState === 'quiz' && gameType === 'quiz' && questions.length > 0 && (
+        <QuizPage
+          questions={questions}
+          currentQuestionIndex={currentQuestionIndex}
+          onAnswer={handleAnswer}
+          onRestartQuiz={handleStartQuiz}
+          currentStage={currentStage}
+        />
+      )}
+      {quizState === 'quiz' && gameType === 'verse-game' && questions.length > 0 && (
+        <VerseQuizPage
+          questions={questions}
+          currentQuestionIndex={currentQuestionIndex}
+          onAnswer={handleAnswer}
+          onRestartQuiz={handleStartVerseGame}
+          currentStage={currentStage}
+        />
+      )}
+      {quizState === 'stage-result' && (
+        <StageResultScreen
+          gameType={gameType}
+          score={stageScore}
+          totalQuestions={questions.length}
+          currentStage={currentStage}
+          onNextStage={handleNextStage}
+          onRetryStage={handleRetryStage}
+          onFinalScore={() => {
+            setTotalScore(prevTotal => prevTotal + stageScore);
+            setQuizState('final-score');
+          }}
+          onPreviousStage={handlePreviousStage}
+          incorrectAnswers={incorrectAnswers}
+          onBackToHome={handleBackToHome}
+        />
+      )}
+      {quizState === 'final-score' && (
+        <FinalScoreScreen
+          gameType={gameType}
+          totalScore={totalScore}
+          onPlayAgain={handleStartQuiz}
+          onStartVerseGame={handleStartVerseGame}
+          onBackToHome={handleBackToHome}
+        />
+      )}
     </div>
   );
 };
 
 export default App;
-
