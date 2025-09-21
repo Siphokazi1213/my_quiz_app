@@ -271,7 +271,7 @@ const StartScreen = ({ onStartQuiz, onStartVerseGame }) => (
 );
 
 // QuizPage component to display questions and handle answers
-const QuizPage = ({ questions, currentQuestionIndex, onAnswer, onRestartQuiz, currentStage }) => {
+const QuizPage = ({ questions, currentQuestionIndex, onAnswer, onRestartQuiz, currentStage, onBackToHome }) => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
 
   if (questions.length === 0) {
@@ -319,15 +319,20 @@ const QuizPage = ({ questions, currentQuestionIndex, onAnswer, onRestartQuiz, cu
       <div className="question-counter">
         Question {currentQuestionIndex + 1} of {questions.length}
       </div>
-      <button onClick={onRestartQuiz} className="link-button mt-6">
-        Restart Test
-      </button>
+      <div className="button-group mt-6">
+        <button onClick={onRestartQuiz} className="button secondary-button">
+          Restart Quiz
+        </button>
+        <button onClick={onBackToHome} className="button back-button">
+          Go Home
+        </button>
+      </div>
     </div>
   );
 };
 
 // New component for the Verse Quiz
-const VerseQuizPage = ({ questions, currentQuestionIndex, onAnswer, onRestartQuiz, currentStage }) => {
+const VerseQuizPage = ({ questions, currentQuestionIndex, onAnswer, onRestartQuiz, onBackToHome, onPreviousStage, currentStage }) => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
 
   if (questions.length === 0) {
@@ -378,9 +383,19 @@ const VerseQuizPage = ({ questions, currentQuestionIndex, onAnswer, onRestartQui
       <div className="question-counter">
         Question {currentQuestionIndex + 1} of {questions.length}
       </div>
-      <button onClick={onRestartQuiz} className="link-button mt-6">
-        Restart Challenge
-      </button>
+      <div className="button-group mt-6">
+        {currentStage > 1 && (
+          <button onClick={onPreviousStage} className="button back-button">
+            Back to Previous Stage
+          </button>
+        )}
+        <button onClick={onRestartQuiz} className="button secondary-button">
+          Restart Challenge
+        </button>
+        <button onClick={onBackToHome} className="button primary-button">
+          Go Home
+        </button>
+      </div>
     </div>
   );
 };
@@ -677,7 +692,6 @@ const App = () => {
           .button.secondary-button {
             background-color: #8b5cf6;
             color: #fff;
-            margin-top: 1rem;
           }
 
           .button.secondary-button:hover {
@@ -935,6 +949,8 @@ const App = () => {
           currentQuestionIndex={currentQuestionIndex}
           onAnswer={handleAnswer}
           onRestartQuiz={handleStartVerseGame}
+          onBackToHome={handleBackToHome}
+          onPreviousStage={handlePreviousStage}
           currentStage={currentStage}
         />
       )}
@@ -969,3 +985,4 @@ const App = () => {
 };
 
 export default App;
+
