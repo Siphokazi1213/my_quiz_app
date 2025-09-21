@@ -490,7 +490,7 @@ const FinalScoreScreen = ({ gameType, totalScore, onPlayAgain, onStartVerseGame,
             Play Again
           </button>
           <button onClick={onStartVerseGame} className="button secondary-button">
-            Try Verse Challenge
+            Play Verse Challenge
           </button>
         </div>
       </>
